@@ -61,7 +61,7 @@ class MainActivity : ComponentActivity() {
             "YELP" -> R.raw.yelp
             "WAIL" -> R.raw.wail
             "HORN" -> R.raw.horn
-            "PA", "MAN" -> R.raw.pa
+            "PA", "MAN", "KRAK" -> R.raw.pa
             "RADIO" -> R.raw.radio
             else -> return
         }
@@ -254,11 +254,11 @@ fun HazardApp(onDemoTone: (String) -> Unit, onStop: () -> Unit, onVolumeChanged:
                         }
 
                         PhysicalButton(
-                            "MAN", manual, Modifier.weight(.72f).fillMaxHeight().padding(start = 4.dp)
+                            "KRAK", manual, Modifier.weight(.72f).fillMaxHeight().padding(start = 4.dp)
                         ) {
                             if (power) {
                                 manual = !manual
-                                if (manual) { selected = "MAN"; onDemoTone("MAN") }
+                                if (manual) { selected = "KRAK"; onDemoTone("KRAK") }
                                 else { selected = "STANDBY"; onStop() }
                             }
                         }
