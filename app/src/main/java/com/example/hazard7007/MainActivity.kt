@@ -1,7 +1,7 @@
 package com.example.hazard7007
 
 import android.media.AudioManager
-import android.media.ToneGenerator
+import android.media.MediaPlayer
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -37,34 +37,55 @@ private val GoldText = Color(0xFFE2B65C)
 private val Muted = Color(0xFF9B9292)
 
 class MainActivity : ComponentActivity() {
-    private var tone: ToneGenerator? = null
+    private var player: MediaPlayer? = null
+    private var volumeLevel = 0.35f
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        tone = ToneGenerator(AudioManager.STREAM_MUSIC, 35)
         setContent {
             HazardApp(
-                onDemoTone = { mode ->
-                    val t = tone ?: return@HazardApp
-                    when (mode) {
-                        "HILO" -> t.startTone(ToneGenerator.TONE_PROP_BEEP2, 180)
-                        "YELP" -> t.startTone(ToneGenerator.TONE_PROP_ACK, 160)
-                        "WAIL" -> t.startTone(ToneGenerator.TONE_PROP_BEEP, 220)
-                        "HORN" -> t.startTone(ToneGenerator.TONE_PROP_BEEP2, 250)
-                        "PA" -> t.startTone(ToneGenerator.TONE_PROP_BEEP, 100)
-                        else -> t.startTone(ToneGenerator.TONE_PROP_BEEP, 100)
-                    }
-                },
-                onStop = { tone?.stopTone() },
+                onDemoTone = { mode -> playAudio(mode) },
+                onStop = { stopAudio() },
                 onVolumeChanged = { value ->
-                    tone?.release()
-                    tone = ToneGenerator(AudioManager.STREAM_MUSIC, value.toInt().coerceIn(35, 100))
+                    volumeLevel = (value / 100f).coerceIn(0.35f, 1f)
+                    player?.setVolume(volumeLevel, volumeLevel)
                 }
             )
         }
     }
+
+    private fun playAudio(mode: String) {
+        stopAudio()
+        val soundId = when (mode) {
+            "HILO" -> R.raw.hilo
+            "YELP" -> R.raw.yelp
+            "WAIL" -> R.raw.wail
+            "HORN" -> R.raw.horn
+            "PA", "MAN" -> R.raw.pa
+            "RADIO" -> R.raw.radio
+            else -> return
+        }
+        player = MediaPlayer.create(this, soundId)?.apply {
+            isLooping = mode == "HILO" || mode == "YELP" || mode == "WAIL"
+            setVolume(volumeLevel, volumeLevel)
+            setOnCompletionListener {
+                it.release()
+                if (player === it) player = null
+            }
+            start()
+        }
+    }
+
+    private fun stopAudio() {
+        player?.let {
+            try { if (it.isPlaying) it.stop() } catch (_: IllegalStateException) {}
+            it.release()
+        }
+        player = null
+    }
+
     override fun onDestroy() {
-        tone?.release()
-        tone = null
+        stopAudio()
         super.onDestroy()
     }
 }
