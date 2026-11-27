@@ -24,10 +24,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 
-private val Bg = Color(0xFF080D19)
-private val Panel = Color(0xFF151F35)
-private val Cyan = Color(0xFF42C5F5)
-private val Muted = Color(0xFF8FA2C2)
+private val Bg = Color(0xFF151515)
+private val Panel = Color(0xFF202020)
+private val Cyan = Color(0xFFB91C1C)
+private val Muted = Color(0xFFA3A3A3)
 
 class MainActivity : ComponentActivity() {
     private var tone: ToneGenerator? = null
@@ -64,7 +64,7 @@ fun HazardApp(onDemoTone: (String) -> Unit, onStop: () -> Unit) {
         onSurface = Color.White
     )) {
         Box(Modifier.fillMaxSize().background(
-            Brush.verticalGradient(listOf(Color(0xFF111C32), Bg, Color(0xFF050811)))
+            Brush.verticalGradient(listOf(Color(0xFF1C1C1C), Bg, Color(0xFF0D0D0D)))
         )) {
             Column(
                 Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()
@@ -76,9 +76,9 @@ fun HazardApp(onDemoTone: (String) -> Unit, onStop: () -> Unit) {
                         Text("HAZARD", color = Color.White, fontSize = 23.sp, fontWeight = FontWeight.Black, letterSpacing = 3.sp)
                         Text("7007  •  SOUND CONTROL DEMO", color = Cyan, fontSize = 10.sp, letterSpacing = 1.5.sp)
                     }
-                    Surface(color = Color(0xFF1C2A42), shape = RoundedCornerShape(50)) {
+                    Surface(color = Color(0xFF2A2A2A), shape = RoundedCornerShape(50)) {
                         Row(Modifier.padding(horizontal = 12.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Box(Modifier.size(7.dp).clip(RoundedCornerShape(50)).background(if (running) Color(0xFF54D69A) else Muted))
+                            Box(Modifier.size(7.dp).clip(RoundedCornerShape(50)).background(if (running) Color(0xFFF97316) else Muted))
                             Spacer(Modifier.width(7.dp))
                             Text(if (running) "ACTIVE" else "READY", fontSize = 10.sp, fontWeight = FontWeight.Bold)
                         }
@@ -88,7 +88,7 @@ fun HazardApp(onDemoTone: (String) -> Unit, onStop: () -> Unit) {
                 Card(
                     colors = CardDefaults.cardColors(containerColor = Panel),
                     shape = RoundedCornerShape(28.dp),
-                    modifier = Modifier.fillMaxWidth().border(1.dp, Color(0xFF344665), RoundedCornerShape(28.dp))
+                    modifier = Modifier.fillMaxWidth().border(1.dp, Color(0xFF3A3A3A), RoundedCornerShape(28.dp))
                 ) {
                     Column(Modifier.padding(18.dp)) {
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -131,7 +131,7 @@ fun HazardApp(onDemoTone: (String) -> Unit, onStop: () -> Unit) {
                     Text("No emergency siren, radio transmission or external hardware.", color = Muted, fontSize = 10.sp)
                 }
                 Spacer(Modifier.height(8.dp))
-                Text("HAZARD 7007  •  ANDROID CONCEPT 1.0", color = Color(0xFF50617D), fontSize = 9.sp, letterSpacing = 1.sp)
+                Text("HAZARD 7007  •  ANDROID CONCEPT 1.0", color = Color(0xFF777777), fontSize = 9.sp, letterSpacing = 1.sp)
             }
         }
     }
@@ -141,8 +141,8 @@ fun HazardApp(onDemoTone: (String) -> Unit, onStop: () -> Unit) {
 fun ModeRow(label: String, active: Boolean, onClick: () -> Unit) {
     Row(
         Modifier.fillMaxWidth().clip(RoundedCornerShape(15.dp))
-            .background(if (active) Color(0xFF203D5B) else Color(0xFF10192B))
-            .border(1.dp, if (active) Cyan.copy(alpha = .8f) else Color(0xFF293954), RoundedCornerShape(15.dp))
+            .background(if (active) Color(0xFF3B1717) else Color(0xFF181818))
+            .border(1.dp, if (active) Cyan.copy(alpha = .8f) else Color(0xFF3A3A3A), RoundedCornerShape(15.dp))
             .clickable { onClick() }.padding(horizontal = 16.dp, vertical = 15.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -158,8 +158,8 @@ fun ModeRow(label: String, active: Boolean, onClick: () -> Unit) {
 fun ActionTile(title: String, subtitle: String, active: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
     Column(
         modifier.clip(RoundedCornerShape(18.dp))
-            .background(if (active) Color(0xFF1D4563) else Panel)
-            .border(1.dp, if (active) Cyan else Color(0xFF2C3B56), RoundedCornerShape(18.dp))
+            .background(if (active) Color(0xFF3B1717) else Panel)
+            .border(1.dp, if (active) Cyan else Color(0xFF3A3A3A), RoundedCornerShape(18.dp))
             .clickable { onClick() }.padding(15.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
