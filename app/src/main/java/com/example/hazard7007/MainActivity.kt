@@ -18,6 +18,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
@@ -51,7 +54,11 @@ class MainActivity : ComponentActivity() {
                         else -> t.startTone(ToneGenerator.TONE_PROP_BEEP, 100)
                     }
                 },
-                onStop = { tone?.stopTone() }
+                onStop = { tone?.stopTone() },
+                onVolumeChanged = { value ->
+                    tone?.release()
+                    tone = ToneGenerator(AudioManager.STREAM_MUSIC, value.toInt().coerceIn(35, 100))
+                }
             )
         }
     }
@@ -63,7 +70,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun HazardApp(onDemoTone: (String) -> Unit, onStop: () -> Unit) {
+fun HazardApp(onDemoTone: (String) -> Unit, onStop: () -> Unit, onVolumeChanged: (Float) -> Unit) {
     val modes = listOf("HILO", "YELP", "WAIL", "STANDBY")
     var selected by remember { mutableStateOf("STANDBY") }
     var volume by remember { mutableFloatStateOf(35f) }
@@ -120,12 +127,16 @@ fun HazardApp(onDemoTone: (String) -> Unit, onStop: () -> Unit) {
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             RotaryDial(
-                                rotation = -35f + (volume / 100f * 70f),
+                                rotation = -135f + ((volume - 35f) / 65f * 270f),
                                 modifier = Modifier.size(72.dp),
-                                onClick = { volume = if (volume >= 90f) 10f else volume + 10f }
+                                onClick = { },
+                                onDrag = { delta ->
+                                    volume = (volume + delta).coerceIn(35f, 100f)
+                                    onVolumeChanged(volume)
+                                }
                             )
                             Spacer(Modifier.height(5.dp))
-                            Text("OFF/VOL", color = GoldText, fontSize = 11.sp,
+                            Text("VOL  ${volume.toInt()}%", color = GoldText, fontSize = 11.sp,
                                 fontWeight = FontWeight.Black, letterSpacing = 1.2.sp)
                         }
 
@@ -245,12 +256,17 @@ fun HazardApp(onDemoTone: (String) -> Unit, onStop: () -> Unit) {
 }
 
 @Composable
-fun RotaryDial(rotation: Float, modifier: Modifier = Modifier, onClick: () -> Unit) {
+fun RotaryDial(rotation: Float, modifier: Modifier = Modifier, onClick: () -> Unit, onDrag: ((Float) -> Unit)? = null) {
     Box(
         modifier.clip(CircleShape)
             .background(Brush.radialGradient(listOf(Color(0xFF454040), Color(0xFF171515), Color(0xFF080707))))
             .border(3.dp, Color(0xFF090808), CircleShape)
-            .clickable { onClick() },
+            .then(if (onDrag != null) Modifier.pointerInput(Unit) {
+                detectDragGestures { change, dragAmount ->
+                    change.consume()
+                    onDrag(dragAmount.x / 2.5f)
+                }
+            } else Modifier.clickable { onClick() }),
         contentAlignment = Alignment.Center
     ) {
         Canvas(Modifier.fillMaxSize().padding(3.dp)) {
