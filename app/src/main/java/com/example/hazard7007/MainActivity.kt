@@ -61,7 +61,7 @@ class MainActivity : ComponentActivity() {
             "YELP" -> R.raw.yelp
             "WAIL" -> R.raw.wail
             "HORN" -> R.raw.horn
-            "PA", "MAN", "KRAK" -> R.raw.pa
+            "KRAK" -> resources.getIdentifier("krak", "raw", packageName).takeIf { it != 0 } ?: return
             "RADIO" -> R.raw.radio
             else -> return
         }
@@ -98,7 +98,6 @@ fun HazardApp(onDemoTone: (String) -> Unit, onStop: () -> Unit, onVolumeChanged:
     var power by remember { mutableStateOf(true) }
     var manual by remember { mutableStateOf(false) }
     var radio by remember { mutableStateOf(false) }
-    var pa by remember { mutableStateOf(false) }
     val running = power && selected != "STANDBY"
 
     MaterialTheme(colorScheme = darkColorScheme(
@@ -118,7 +117,7 @@ fun HazardApp(onDemoTone: (String) -> Unit, onStop: () -> Unit, onVolumeChanged:
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(Modifier.weight(1f)) {
-                        Text("HAZARD 7007", color = Color.White, fontSize = 21.sp,
+                        Text("SGU 2.0", color = Color.White, fontSize = 21.sp,
                             fontWeight = FontWeight.Black, letterSpacing = 2.5.sp)
                         Text("PREMIER CONTROL • ANDROID", color = Red,
                             fontSize = 9.sp, letterSpacing = 1.5.sp, fontWeight = FontWeight.Bold)
@@ -173,6 +172,7 @@ fun HazardApp(onDemoTone: (String) -> Unit, onStop: () -> Unit, onVolumeChanged:
                                             if (power) {
                                                 selected = mode
                                                 manual = false
+                                                radio = false
                                                 if (mode == "STANDBY") onStop() else onDemoTone(mode)
                                             }
                                         }.padding(vertical = 3.dp, horizontal = 3.dp),
@@ -200,19 +200,26 @@ fun HazardApp(onDemoTone: (String) -> Unit, onStop: () -> Unit, onVolumeChanged:
                                         val next = modes[(modes.indexOf(selected) + 1) % modes.size]
                                         selected = next
                                         manual = false
+                                        radio = false
                                         if (next == "STANDBY") onStop() else onDemoTone(next)
                                     }
                                 }
                             )
                             Spacer(Modifier.height(5.dp))
-                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                                Text("PA", color = if (pa) Orange else GoldText,
-                                    fontSize = 10.sp, fontWeight = FontWeight.Black,
-                                    modifier = Modifier.clickable { pa = !pa; if (pa && power) onDemoTone("PA") })
-                                Text("RADIO", color = if (radio) Orange else GoldText,
-                                    fontSize = 10.sp, fontWeight = FontWeight.Black,
-                                    modifier = Modifier.clickable { radio = !radio })
-                            }
+                            Text("RADIO", color = if (radio) Orange else GoldText,
+                                fontSize = 10.sp, fontWeight = FontWeight.Black,
+                                modifier = Modifier.clickable {
+                                    if (power) {
+                                        radio = !radio
+                                        if (radio) {
+                                            selected = "STANDBY"
+                                            manual = false
+                                            onDemoTone("RADIO")
+                                        } else {
+                                            onStop()
+                                        }
+                                    }
+                                })
                         }
                     }
 
@@ -229,7 +236,7 @@ fun HazardApp(onDemoTone: (String) -> Unit, onStop: () -> Unit, onVolumeChanged:
                                 .clickable {
                                     power = !power
                                     if (!power) {
-                                        selected = "STANDBY"; manual = false
+                                        selected = "STANDBY"; manual = false; radio = false
                                         onStop()
                                     }
                                 },
