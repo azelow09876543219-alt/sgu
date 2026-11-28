@@ -56,16 +56,19 @@ class MainActivity : ComponentActivity() {
 
     private fun playAudio(mode: String, bank: Int) {
         stopAudio()
-        val soundId = if (bank == 2 && mode in listOf("HILO", "YELP", "WAIL")) {
-            listOf(R.raw.m2_hilo, R.raw.m2_yelp, R.raw.m2_wail).random()
-        } else when (mode) {
-            "HILO" -> R.raw.hilo
-            "YELP" -> R.raw.yelp
-            "WAIL" -> R.raw.wail
-            "HORN" -> R.raw.horn
-            "KRAK" -> resources.getIdentifier("krak", "raw", packageName).takeIf { it != 0 } ?: return
-            "RADIO" -> R.raw.radio
-            else -> return
+        val soundId = when {
+            bank == 2 && mode == "HILO" -> R.raw.m2_hilo
+            bank == 2 && mode == "YELP" -> R.raw.m2_yelp
+            bank == 2 && mode == "WAIL" -> R.raw.m2_wail
+            else -> when (mode) {
+                "HILO" -> R.raw.hilo
+                "YELP" -> R.raw.yelp
+                "WAIL" -> R.raw.wail
+                "HORN" -> R.raw.horn
+                "KRAK" -> resources.getIdentifier("krak", "raw", packageName).takeIf { it != 0 } ?: return
+                "RADIO" -> R.raw.radio
+                else -> return
+            }
         }
         player = MediaPlayer.create(this, soundId)?.apply {
             isLooping = mode == "HILO" || mode == "YELP" || mode == "WAIL"
