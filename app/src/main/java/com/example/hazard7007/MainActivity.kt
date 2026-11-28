@@ -44,7 +44,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             HazardApp(
-                onDemoTone = { mode -> playAudio(mode) },
+                onDemoTone = { mode, bank -> playAudio(mode, bank) },
                 onStop = { stopAudio() },
                 onVolumeChanged = { value ->
                     volumeLevel = (value / 100f).coerceIn(0.35f, 1f)
@@ -54,9 +54,15 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun playAudio(mode: String) {
+    private fun playAudio(mode: String, bank: Int) {
         stopAudio()
-        val soundId = when (mode) {
+        val soundId = if (bank == 2 && mode in listOf("HILO", "YELP", "WAIL")) {
+            when (mode) {
+                "HILO" -> R.raw.m2_hilo
+                "YELP" -> R.raw.m2_yelp
+                else -> R.raw.m2_wail
+            }
+        } else when (mode) {
             "HILO" -> R.raw.hilo
             "YELP" -> R.raw.yelp
             "WAIL" -> R.raw.wail
@@ -91,10 +97,11 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun HazardApp(onDemoTone: (String) -> Unit, onStop: () -> Unit, onVolumeChanged: (Float) -> Unit) {
+fun HazardApp(onDemoTone: (String, Int) -> Unit, onStop: () -> Unit, onVolumeChanged: (Float) -> Unit) {
     val modes = listOf("HILO", "YELP", "WAIL", "STANDBY")
     var selected by remember { mutableStateOf("STANDBY") }
     var volume by remember { mutableFloatStateOf(35f) }
+    var soundBank by remember { mutableIntStateOf(1) }
     var power by remember { mutableStateOf(true) }
     var manual by remember { mutableStateOf(false) }
     var radio by remember { mutableStateOf(false) }
@@ -128,6 +135,39 @@ fun HazardApp(onDemoTone: (String) -> Unit, onStop: () -> Unit, onVolumeChanged:
                         Spacer(Modifier.width(6.dp))
                         Text(if (!power) "OFF" else if (running) "ACTIVE" else "READY",
                             color = GoldText, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+
+                Row(
+                    Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 5.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("SOUND BANK", color = Muted, fontSize = 9.sp,
+                        fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                    Spacer(Modifier.width(10.dp))
+                    listOf(1, 2).forEach { bank ->
+                        Box(
+                            Modifier.padding(horizontal = 3.dp)
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(if (soundBank == bank) Red else PanelInner)
+                                .border(1.dp, if (soundBank == bank) Orange else Muted.copy(alpha = .5f),
+                                    RoundedCornerShape(6.dp))
+                                .clickable {
+                                    if (soundBank != bank) {
+                                        soundBank = bank
+                                        selected = "STANDBY"
+                                        manual = false
+                                        radio = false
+                                        onStop()
+                                    }
+                                }
+                                .padding(horizontal = 18.dp, vertical = 7.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("MODE $bank", color = Color.White, fontSize = 10.sp,
+                                fontWeight = FontWeight.Black)
+                        }
                     }
                 }
 
@@ -173,7 +213,7 @@ fun HazardApp(onDemoTone: (String) -> Unit, onStop: () -> Unit, onVolumeChanged:
                                                 selected = mode
                                                 manual = false
                                                 radio = false
-                                                if (mode == "STANDBY") onStop() else onDemoTone(mode)
+                                                if (mode == "STANDBY") onStop() else onDemoTone(mode, soundBank)
                                             }
                                         }.padding(vertical = 3.dp, horizontal = 3.dp),
                                     verticalAlignment = Alignment.CenterVertically
@@ -201,7 +241,7 @@ fun HazardApp(onDemoTone: (String) -> Unit, onStop: () -> Unit, onVolumeChanged:
                                         selected = next
                                         manual = false
                                         radio = false
-                                        if (next == "STANDBY") onStop() else onDemoTone(next)
+                                        if (next == "STANDBY") onStop() else onDemoTone(next, soundBank)
                                     }
                                 }
                             )
@@ -214,7 +254,7 @@ fun HazardApp(onDemoTone: (String) -> Unit, onStop: () -> Unit, onVolumeChanged:
                                         if (radio) {
                                             selected = "STANDBY"
                                             manual = false
-                                            onDemoTone("RADIO")
+                                            onDemoTone("RADIO", soundBank)
                                         } else {
                                             onStop()
                                         }
@@ -265,13 +305,13 @@ fun HazardApp(onDemoTone: (String) -> Unit, onStop: () -> Unit, onVolumeChanged:
                         ) {
                             if (power) {
                                 manual = !manual
-                                if (manual) { selected = "KRAK"; onDemoTone("KRAK") }
+                                if (manual) { selected = "KRAK"; onDemoTone("KRAK", soundBank) }
                                 else { selected = "STANDBY"; onStop() }
                             }
                         }
                         PhysicalButton(
                             "HORN", false, Modifier.weight(.72f).fillMaxHeight().padding(start = 6.dp)
-                        ) { if (power) onDemoTone("HORN") }
+                        ) { if (power) onDemoTone("HORN", soundBank) }
                     }
                 }
 
