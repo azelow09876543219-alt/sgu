@@ -57,11 +57,7 @@ class MainActivity : ComponentActivity() {
     private fun playAudio(mode: String, bank: Int) {
         stopAudio()
         val soundId = if (bank == 2 && mode in listOf("HILO", "YELP", "WAIL")) {
-            when (mode) {
-                "HILO" -> R.raw.m2_hilo
-                "YELP" -> R.raw.m2_yelp
-                else -> R.raw.m2_wail
-            }
+            listOf(R.raw.m2_hilo, R.raw.m2_yelp, R.raw.m2_wail).random()
         } else when (mode) {
             "HILO" -> R.raw.hilo
             "YELP" -> R.raw.yelp
